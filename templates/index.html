@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpendWise // Student Expense Management Platform</title>
+    
+    <!-- Google Fonts - Inter for UI copy -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Core App Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fa-solid fa-compass-drafting logo-icon"></i>
+                    <span>Spend<span class="highlight">Wise</span></span>
+                </div>
+                <div class="badge">Student</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-view="dashboard">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>Dashboard</span>
+                    </li>
+                    <li class="nav-item" data-view="expenses">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Expenses</span>
+                    </li>
+                    <li class="nav-item" data-view="analytics">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </li>
+                    <li class="nav-item nav-item-has-badge" data-view="insights">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span class="nav-label">AI-Assisted Insights</span>
+                        <span class="nav-badge" id="insights-count">0</span>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block btn-add-expense-trigger">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add Expense</span>
+                </button>
+                
+                <div class="theme-toggle-container">
+                    <span>Dark Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-checkbox" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navigation Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <h1 id="view-title">Dashboard</h1>
+                    <p class="text-muted" id="view-subtitle">Track, analyze, and optimize your student budget.</p>
+                </div>
+                <div class="header-right">
+                    <div class="quick-stats">
+                        <span class="stat-bubble">
+                            <span class="label">Date:</span>
+                            <span class="value" id="current-date-badge">June 6, 2026</span>
+                        </span>
+                    </div>
+                    <div class="user-profile">
+                        <div class="avatar">SW</div>
+                        <span class="username">Student Plan</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Loading Spinner / Skeleton Container -->
+            <div id="view-loader" class="loader-container hidden">
+                <div class="spinner"></div>
+                <p>Analyzing financial database...</p>
+            </div>
+
+            <!-- View 1: Dashboard -->
+            <section id="view-dashboard" class="content-view active-view">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card card-glow-emerald">
+                        <div class="card-icon emerald">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <div class="card-info">
+                            <span class="card-label">Total Expenses</span>
+                            <h2 class="card-value" id="total-expenses-value">₹0.00</h2>
+                            <span class="card-trend text-emerald">
+                                <i class="fa-solid fa-circle-info"></i> All-time tracked
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card card-glow-indigo">
+                        <div class="card-icon indigo">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div class="card-info">
+                            <span class="card-label">Top Category</span>
+                            <h2 class="card-value" id="top-category-value">-</h2>
+                            <span class="card-trend text-indigo" id="top-category-pct">
+                                0% of total spending
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card card-glow-purple">
+                        <div class="card-icon purple">
+                            <i class="fa-solid fa-hashtag"></i>
+                        </div>
+                        <div class="card-info">
+                            <span class="card-label">Expenses Logged</span>
+                            <h2 class="card-value" id="transaction-count-value">0</h2>
+                            <span class="card-trend text-purple">
+                                Total entries in database
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card card-glow-orange">
+                        <div class="card-icon orange">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                        <div class="card-info">
+                            <span class="card-label">Daily Spending</span>
+                            <h2 class="card-value" id="daily-burn-value">₹0.00</h2>
+                            <span class="card-trend text-orange">
+                                Based on active range
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Three New Dashboard Widgets Row -->
+                <div class="dashboard-widgets-grid">
+                    <!-- Widget 1: Monthly Budget -->
+                    <div class="dashboard-card widget-card budget-widget">
+                        <div class="card-header">
+                            <h3>Monthly Budget</h3>
+                            <button class="icon-btn btn-edit-budget-trigger" title="Set Monthly Budget">
+                                <i class="fa-solid fa-gear"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="widget-content">
+                                <div class="widget-primary">
+                                    <div class="widget-main-stat">
+                                        <span class="widget-value" id="budget-amount-display">₹0 / ₹15,000</span>
+                                        <span class="widget-badge" id="budget-pct-display">0%</span>
+                                    </div>
+                                </div>
+                                <div class="widget-secondary">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar bg-emerald" id="budget-progress-bar" style="width: 0%"></div>
+                                    </div>
+                                    <p class="widget-footer-text" id="budget-meta-display">₹15,000 remaining</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget 2: Savings Goal -->
+                    <div class="dashboard-card widget-card savings-widget">
+                        <div class="card-header">
+                            <h3>Savings Goal</h3>
+                            <button class="icon-btn btn-edit-savings-trigger" title="Set Savings Goal">
+                                <i class="fa-solid fa-gear"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="widget-content">
+                                <div class="widget-primary">
+                                    <div class="widget-main-stat">
+                                        <span class="widget-value" id="savings-amount-display">₹0 / ₹5,000</span>
+                                        <span class="widget-badge badge-yellow" id="savings-pct-display">0%</span>
+                                    </div>
+                                </div>
+                                <div class="widget-secondary">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar bg-yellow" id="savings-progress-bar" style="width: 0%"></div>
+                                    </div>
+                                    <p class="widget-footer-text" id="savings-meta-display">₹5,000 remaining</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget 3: Spending Trend -->
+                    <div class="dashboard-card widget-card trend-widget">
+                        <div class="card-header">
+                            <h3>Spending Trend</h3>
+                            <button class="btn btn-outline btn-sm nav-link-analytics" data-view="analytics">Details</button>
+                        </div>
+                        <div class="card-body list-body">
+                            <div class="trend-list-container">
+                                <div class="trend-table-header">
+                                    <span class="trend-col-month">Month</span>
+                                    <span class="trend-col-amount">Amount</span>
+                                    <span class="trend-col-change">Change</span>
+                                </div>
+                                <div id="spending-trend-list" class="trend-table-body">
+                                    <!-- Dynamic month-wise totals -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div class="dashboard-layout">
+                    <!-- Recent Transactions -->
+                    <div class="dashboard-card recent-transactions-card">
+                        <div class="card-header">
+                            <h3>Recent Transactions</h3>
+                            <button class="btn btn-outline btn-sm nav-link-expenses" data-view="expenses">View All</button>
+                        </div>
+                        <div class="card-body">
+                            <div id="recent-expenses-list" class="transactions-list">
+                                <!-- Dynamic entries -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Allocation Card -->
+                    <div class="dashboard-card category-breakdown-card">
+                        <div class="card-header">
+                            <h3>Where Your Money Goes</h3>
+                            <button class="btn btn-outline btn-sm nav-link-analytics" data-view="analytics">Details</button>
+                        </div>
+                        <div class="card-body chart-wrapper">
+                            <div class="chart-container-mini">
+                                <canvas id="miniCategoryChart"></canvas>
+                            </div>
+                            <div id="category-legend" class="category-legend">
+                                <!-- Dynamic legends -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View 2: Expense History -->
+            <section id="view-expenses" class="content-view hidden">
+                <div class="history-controls">
+                    <!-- Filters and Search Bar -->
+                    <div class="search-filter-bar">
+                        <div class="input-group search-input-group">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="expense-search" placeholder="Search by title or vendor...">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <select id="expense-filter-category" class="form-control">
+                                <option value="">All Categories</option>
+                                <option value="Food">Food</option>
+                                <option value="Travel">Travel</option>
+                                <option value="Education">Education</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="College Expenses">College Expenses</option>
+                                <option value="Hostel">Hostel</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <select id="expense-sort-by" class="form-control">
+                                <option value="date">Sort by Date</option>
+                                <option value="amount">Sort by Amount</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <button id="expense-sort-order-btn" class="btn btn-outline icon-btn" title="Toggle Sort Order">
+                                <i class="fa-solid fa-sort-amount-desc" id="sort-order-icon"></i>
+                            </button>
+                        </div>
+
+                        <div class="action-group">
+                            <button id="export-csv-btn" class="btn btn-secondary">
+                                <i class="fa-solid fa-file-export"></i>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-container">
+                    <div class="dashboard-card full-width-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="expenses-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Category</th>
+                                            <th>Date</th>
+                                            <th class="text-right">Amount</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="expenses-table-body">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Empty state representation -->
+                            <div id="expenses-empty-state" class="empty-state hidden">
+                                <i class="fa-solid fa-receipt empty-icon"></i>
+                                <h3>No expenses found</h3>
+                                <p>Try adjusting your search filters or add your first expense using the button below.</p>
+                                <button class="btn btn-primary btn-add-expense-trigger mt-3">
+                                    <i class="fa-solid fa-plus"></i> Add Expense
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View 3: Analytics -->
+            <section id="view-analytics" class="content-view hidden">
+                <div class="analytics-grid">
+                    <!-- Left: Category Chart -->
+                    <div class="dashboard-card main-chart-card">
+                        <div class="card-header">
+                            <h3>Category-Wise Spending</h3>
+                            <p class="text-muted">A clear look at how your funds are distributed across active categories.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="main-chart-container">
+                                <canvas id="analyticsCategoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Trends Chart -->
+                    <div class="dashboard-card main-chart-card">
+                        <div class="card-header">
+                            <h3>Monthly Spending Trends</h3>
+                            <p class="text-muted">Observe your budgeting performance month-over-month.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="main-chart-container">
+                                <canvas id="analyticsTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demographic Budget Check -->
+                <div class="dashboard-card mt-4">
+                    <div class="card-header">
+                        <h3>Demographic Budget Benchmarks</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="benchmark-grid">
+                            <div class="benchmark-item">
+                                <div class="benchmark-info">
+                                    <span class="benchmark-label">Essentials Allowance (Food, Travel, Education, Hostel, College Expenses)</span>
+                                    <span class="benchmark-target">Recommended: 50%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar bg-emerald" id="essentials-benchmark-bar" style="width: 0%"></div>
+                                </div>
+                                <span class="benchmark-current-val" id="essentials-benchmark-val">0% current</span>
+                            </div>
+                            
+                            <div class="benchmark-item">
+                                <div class="benchmark-info">
+                                    <span class="benchmark-label">Discretionary Limit (Shopping, Entertainment, Other)</span>
+                                    <span class="benchmark-target">Recommended: Max 30%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar bg-purple" id="discretionary-benchmark-bar" style="width: 0%"></div>
+                                </div>
+                                <span class="benchmark-current-val" id="discretionary-benchmark-val">0% current</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View 4: AI-Assisted Insights -->
+            <section id="view-insights" class="content-view hidden">
+                <div class="insights-summary-banner">
+                    <div class="banner-sparkle">
+                        <i class="fa-solid fa-wand-magic-sparkles spark-icon animate-pulse"></i>
+                    </div>
+                    <div class="banner-text">
+                        <h2>Smart Spending Analysis</h2>
+                        <p>SpendWise heuristic analysis calculates savings optimizations, warns of budget leakage, and monitors student budget patterns.</p>
+                    </div>
+                </div>
+
+                <div id="ai-insights-container" class="insights-deck">
+                    <!-- Dynamic insights cards -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Add Expense Modal -->
+    <div id="add-expense-modal" class="modal-overlay hidden">
+        <div class="modal-card animate-slide-up">
+            <div class="modal-header">
+                <h2>Add New Expense</h2>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-expense-form">
+                    <div class="form-group">
+                        <label for="expense-title">Expense Title <span class="required">*</span></label>
+                        <input type="text" id="expense-title" class="form-control" placeholder="e.g., Canteen Lunch, Hostel Mess Fee" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="expense-amount">Amount (₹) <span class="required">*</span></label>
+                            <input type="number" id="expense-amount" class="form-control" step="0.01" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="expense-category">Category <span class="required">*</span></label>
+                            <select id="expense-category" class="form-control" required>
+                                <option value="" disabled selected>Select Category</option>
+                                <option value="Food">Food</option>
+                                <option value="Travel">Travel</option>
+                                <option value="Education">Education</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="College Expenses">College Expenses</option>
+                                <option value="Hostel">Hostel</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expense-date">Transaction Date <span class="required">*</span></label>
+                        <input type="date" id="expense-date" class="form-control" required>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline btn-close-modal-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Expense</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Expense Modal -->
+    <div id="edit-expense-modal" class="modal-overlay hidden">
+        <div class="modal-card animate-slide-up">
+            <div class="modal-header">
+                <h2>Edit Expense</h2>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-expense-form">
+                    <!-- Hidden ID input -->
+                    <input type="hidden" id="edit-expense-id">
+                    
+                    <div class="form-group">
+                        <label for="edit-expense-title">Expense Title <span class="required">*</span></label>
+                        <input type="text" id="edit-expense-title" class="form-control" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="edit-expense-amount">Amount (₹) <span class="required">*</span></label>
+                            <input type="number" id="edit-expense-amount" class="form-control" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="edit-expense-category">Category <span class="required">*</span></label>
+                            <select id="edit-expense-category" class="form-control" required>
+                                <option value="Food">Food</option>
+                                <option value="Travel">Travel</option>
+                                <option value="Education">Education</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="College Expenses">College Expenses</option>
+                                <option value="Hostel">Hostel</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-expense-date">Transaction Date <span class="required">*</span></label>
+                        <input type="date" id="edit-expense-date" class="form-control" required>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline btn-close-modal-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Monthly Budget Modal -->
+    <div id="edit-budget-modal" class="modal-overlay hidden">
+        <div class="modal-card animate-slide-up">
+            <div class="modal-header">
+                <h2>Set Monthly Budget</h2>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-budget-form">
+                    <div class="form-group">
+                        <label for="budget-limit-input">Monthly Budget Limit (₹) <span class="required">*</span></label>
+                        <input type="number" id="budget-limit-input" class="form-control" step="100" min="0" required placeholder="15000">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline btn-close-modal-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Budget</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Savings Goal Modal -->
+    <div id="edit-savings-modal" class="modal-overlay hidden">
+        <div class="modal-card animate-slide-up">
+            <div class="modal-header">
+                <h2>Set Savings Goal</h2>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-savings-form">
+                    <div class="form-group">
+                        <label for="savings-target-input">Target Savings Amount (₹) <span class="required">*</span></label>
+                        <input type="number" id="savings-target-input" class="form-control" step="100" min="0" required placeholder="5000">
+                    </div>
+                    <div class="form-group">
+                        <label for="current-savings-input">Current Savings Amount (₹) <span class="required">*</span></label>
+                        <input type="number" id="current-savings-input" class="form-control" step="100" min="0" required placeholder="0">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline btn-close-modal-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Savings Goal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div id="delete-confirm-modal" class="modal-overlay hidden">
+        <div class="modal-card modal-sm animate-slide-up">
+            <div class="modal-header">
+                <h2>Delete Expense</h2>
+                <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fa-solid fa-circle-exclamation text-orange warning-icon"></i>
+                <p class="modal-warning-text">Are you sure you want to permanently delete this transaction? This action cannot be undone.</p>
+                <div class="modal-actions text-center justify-center">
+                    <button type="button" class="btn btn-outline btn-close-modal-btn">Cancel</button>
+                    <button type="button" id="confirm-delete-btn" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Core App JS Logic -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

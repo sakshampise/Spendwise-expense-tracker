@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+expenses.db
+
+.venv/
+venv/
+
+.vscode/
+.idea/
